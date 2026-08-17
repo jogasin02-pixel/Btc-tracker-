@@ -14,15 +14,20 @@ st.set_page_config(
 st.title("🚀 Bitcoin Operator Trap & Super-Fast Price Dashboard")
 st.markdown("---")
 
-# Function to fetch ultra-fast live price using Binance Public API with 10s timeout
-@st.cache_data(ttl=2)
+# Function to fetch live price using CoinGecko Public API
+@st.cache_data(ttl=5)
 def get_fast_btc_data():
     try:
-        url = "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT"
+        url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_high_24h=true&include_low_24h=true&include_market_cap=true&include_24hr_change=true"
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
-            data = response.json()
-            return float(data['lastPrice']), float(data['highPrice']), float(data['lowPrice']), float(data['volume']), float(data['priceChangePercent'])
+            data = response.json()['bitcoin']
+            price = float(data['usd'])
+            high = float(data['usd_high_24h'])
+            low = float(data['usd_low_24h'])
+            volume = float(data.get('usd_market_cap', 0) / price) # Estimating volume proxy if needed
+            price_change = float(data['usd_24h_change'])
+            return price, high, low, volume, price_change
     except Exception:
         return None, None, None, None, None
     return None, None, None, None, None
@@ -56,13 +61,10 @@ if price:
 
     if position_in_range > 0.85:
         trap_status = "⚠️ BEARISH TRAP ZONE (Smart money may dump)"
-        trap_color = "red"
     elif position_in_range < 0.15:
         trap_status = "⚠️ BULLISH TRAP ZONE (Smart money may pump)"
-        trap_color = "green"
     else:
         trap_status = "⚖️ NEUTRAL ZONE (Normal market movement)"
-        trap_color = "orange"
 
     # Display Metrics Instantly
     with metric_placeholder.container():
@@ -70,7 +72,7 @@ if price:
         m1.metric("Live BTC Price", f"${price:,.2f}", f"{price_change:+.2f}%")
         m2.metric("24h High", f"${high:,.2f}")
         m3.metric("24h Low", f"${low:,.2f}")
-        m4.metric("24h Volume", f"{volume:,.2f} BTC")
+        m4.metric("Market Cap / Vol", f"${volume:,.0f}")
 
     with trap_placeholder.container():
         st.markdown(f"### **Operator Status: {trap_status}**")
@@ -84,4 +86,4 @@ if auto_refresh:
     st.rerun()
 else:
     st.info("Click **'Start Fast Tracking'** or check **'Auto Refresh'** to begin live updates.")
-  
+    
