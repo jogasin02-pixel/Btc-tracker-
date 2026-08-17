@@ -1,16 +1,15 @@
 import streamlit as st
 import yfinance as yf
 import time
+import streamlit.components.v1 as components
 
-st.set_page_config(
-    page_title="BTC Operator Trap Dashboard",
-    page_icon="🚀",
-    layout="wide"
-)
+# Page Configuration
+st.set_page_config(page_title="BTC Pro Dashboard", layout="wide")
 
-st.title("🚀 Bitcoin Operator Trap & Super-Fast Price Dashboard")
+st.title("🚀 Bitcoin Advanced Dashboard & Live Chart")
 st.markdown("---")
 
+# 1. Live Price & Trap Logic (Same as before)
 @st.cache_data(ttl=5)
 def get_fast_btc_data():
     try:
@@ -20,54 +19,52 @@ def get_fast_btc_data():
             price = float(df['Close'].iloc[-1])
             high = float(df['High'].max())
             low = float(df['Low'].min())
-            volume = float(df['Volume'].sum())
-            
-            hist_24h = btc.history(period="2d")
-            if len(hist_24h) >= 2:
-                prev_close = float(hist_24h['Close'].iloc[-2])
-                price_change = ((price - prev_close) / prev_close) * 100
-            else:
-                price_change = 0.0
-                
-            return price, high, low, volume, price_change
-    except Exception:
-        return None, None, None, None, None
-    return None, None, None, None, None
+            return price, high, low
+    except: return None, None, None
+    return None, None, None
 
-col1, col2 = st.columns([1, 3])
-
-with col1:
-    st.subheader("Control Panel")
-    start_tracking = st.button("⚡ Start Fast Tracking")
-    auto_refresh = st.checkbox("🔄 Auto Refresh (Every 3s)")
-
-with col2:
-    st.subheader("Live Market Status")
-
-price, high, low, volume, price_change = get_fast_btc_data()
+price, high, low = get_fast_btc_data()
 
 if price:
     range_spread = high - low
-    position_in_range = (price - low) / range_spread if range_spread > 0 else 0.5
+    pos = (price - low) / range_spread if range_spread > 0 else 0.5
+    status = "⚠️ BEARISH TRAP" if pos > 0.85 else ("⚠️ BULLISH TRAP" if pos < 0.15 else "⚖️ NEUTRAL")
+    
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Live Price", f"${price:,.2f}")
+    col2.metric("24h High", f"${high:,.2f}")
+    col3.metric("Operator Status", status)
 
-    if position_in_range > 0.85:
-        trap_status = "⚠️ BEARISH TRAP ZONE (Smart money may dump)"
-    elif position_in_range < 0.15:
-        trap_status = "⚠️ BULLISH TRAP ZONE (Smart money may pump)"
-    else:
-        trap_status = "⚖️ NEUTRAL ZONE"
+# 2. TradingView Advanced Chart Integration
+st.subheader("📊 Advanced Technical Chart (Add Indicators Here)")
 
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Live BTC Price", f"${price:,.2f}", f"{price_change:+.2f}%")
-    m2.metric("24h High", f"${high:,.2f}")
-    m3.metric("24h Low", f"${low:,.2f}")
-    m4.metric("24h Volume", f"{volume:,.0f} BTC")
+# TradingView Widget HTML Code
+tv_widget = """
+<div class="tradingview-widget-container">
+  <div id="tradingview_chart"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script type="text/javascript">
+  new TradingView.widget({
+  "width": "100%",
+  "height": 600,
+  "symbol": "BINANCE:BTCUSDT",
+  "interval": "15",
+  "timezone": "Etc/UTC",
+  "theme": "light",
+  "style": "1",
+  "locale": "en",
+  "toolbar_bg": "#f1f3f6",
+  "enable_publishing": false,
+  "allow_symbol_change": true,
+  "container_id": "tradingview_chart"
+});
+  </script>
+</div>
+"""
 
-    st.markdown(f"### **Operator Status: {trap_status}**")
-    st.info(f"Price Position in 24h Range: {position_in_range * 100:.1f}%")
-else:
-    st.error("Error fetching data. Please wait a moment.")
+components.html(tv_widget, height=600)
 
-if auto_refresh:
+if st.checkbox("🔄 Auto Refresh Dashboard"):
     time.sleep(3)
     st.rerun()
+    
