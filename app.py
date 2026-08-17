@@ -1,8 +1,7 @@
- import streamlit as st
+import streamlit as st
 import yfinance as yf
 import time
 
-# Page Configuration
 st.set_page_config(
     page_title="BTC Operator Trap Dashboard",
     page_icon="🚀",
@@ -12,7 +11,6 @@ st.set_page_config(
 st.title("🚀 Bitcoin Operator Trap & Super-Fast Price Dashboard")
 st.markdown("---")
 
-# Function to fetch live price using yfinance
 @st.cache_data(ttl=5)
 def get_fast_btc_data():
     try:
@@ -24,7 +22,6 @@ def get_fast_btc_data():
             low = float(df['Low'].min())
             volume = float(df['Volume'].sum())
             
-            # Calculate 24h change
             hist_24h = btc.history(period="2d")
             if len(hist_24h) >= 2:
                 prev_close = float(hist_24h['Close'].iloc[-2])
@@ -37,7 +34,6 @@ def get_fast_btc_data():
         return None, None, None, None, None
     return None, None, None, None, None
 
-# Layout for controls
 col1, col2 = st.columns([1, 3])
 
 with col1:
@@ -48,11 +44,9 @@ with col1:
 with col2:
     st.subheader("Live Market Status")
 
-# Fetching Data
 price, high, low, volume, price_change = get_fast_btc_data()
 
 if price:
-    # Logic
     range_spread = high - low
     position_in_range = (price - low) / range_spread if range_spread > 0 else 0.5
 
@@ -63,7 +57,6 @@ if price:
     else:
         trap_status = "⚖️ NEUTRAL ZONE"
 
-    # Display
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Live BTC Price", f"${price:,.2f}", f"{price_change:+.2f}%")
     m2.metric("24h High", f"${high:,.2f}")
@@ -78,4 +71,3 @@ else:
 if auto_refresh:
     time.sleep(3)
     st.rerun()
-   
