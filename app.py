@@ -1,13 +1,11 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Page Configuration
 st.set_page_config(page_title="BTC Pro Dashboard", layout="wide")
 
 st.title("🚀 Bitcoin Advanced Dashboard & Live Chart")
 st.markdown("---")
 
-# 1. Live Price using TradingView (Exact same price as chart, zero delay)
 st.markdown("### Live Price")
 price_widget = """
 <div class="tradingview-widget-container">
@@ -26,31 +24,8 @@ price_widget = """
 components.html(price_widget, height=90)
 
 st.markdown("---")
-
-# 2. Operator Trend & Signal Meter
-st.markdown("### Operator Status")
-ta_widget = """
-<div class="tradingview-widget-container">
-  <div class="tradingview-widget-container__widget"></div>
-  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
-  {
-  "interval": "15m",
-  "width": "100%",
-  "isTransparent": true,
-  "colorTheme": "dark",
-  "showSymbolLogo": true,
-  "locale": "en",
-  "symbol": "BINANCE:BTCUSDT"
-}
-  </script>
-</div>
-"""
-components.html(ta_widget, height=380)
-
-st.markdown("---")
 st.subheader("📊 Advanced Technical Chart")
 
-# 3. TradingView Advanced Chart Integration
 tv_widget = """
 <div class="tradingview-widget-container">
   <div id="tradingview_chart"></div>
