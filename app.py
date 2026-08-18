@@ -27,7 +27,7 @@ price, high, low = get_fast_btc_data()
 
 if price:
     range_spread = high - low
-    pos = (price - low) / range_spread if range_spread > 0 else 0.5
+    pos = (price - low) / range_spread if range_spread > 0 else 0.2
     status = "⚠️ BEARISH TRAP" if pos > 0.85 else ("⚠️ BULLISH TRAP" if pos < 0.15 else "⚖️ NEUTRAL")
     
     col1, col2, col3 = st.columns(3)
