@@ -89,7 +89,7 @@ tv_widget = """
 
 components.html(tv_widget, height=600)
 
-if st.checkbox("🔄 Auto Refresh (Every 5s)", value=True):
+if st.checkbox("🔄 Auto Refresh (Every 1s)", value=True):
     import time
     time.sleep(5)
     st.rerun()
