@@ -8,7 +8,7 @@ st.set_page_config(page_title="BTC Operator Trap & Pro Chart", layout="wide")
 st.title("🚀 Bitcoin Operator Trap & Pro Chart")
 st.markdown("---")
 
-# 1. Fetch Live Price & Calculate Trap Status
+# Fetch Live Price & Calculate Operator Trap Status
 @st.cache_data(ttl=5)
 def get_operator_trap():
     try:
@@ -28,16 +28,21 @@ def get_operator_trap():
         else:
             return price, high, low, "⚖️ NEUTRAL ZONE (WAIT FOR BREAKOUT)", "warning"
     except:
-        # Fallback if API fails
         return 0.0, 0.0, 0.0, "🔄 Loading Live Status...", "warning"
 
 price, high, low, status_text, box_type = get_operator_trap()
 
-# Displaying Live Price and Operator Status at the Top
-st.markdown(f"### Live Price")
-st.markdown(f"## **${price:,.2f}**")
+# 1. Live Price & 24h High Section
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown("### Live Price")
+    st.markdown(f"## **${price:,.2f}**")
+with col2:
+    st.markdown("### 24h High")
+    st.markdown(f"## **${high:,.2f}**")
 
-st.markdown(f"### Operator Status")
+# 2. Operator Status Box
+st.markdown("### Operator Status")
 if box_type == "error":
     st.error(f"### {status_text}")
 elif box_type == "success":
@@ -48,7 +53,7 @@ else:
 st.markdown("---")
 st.markdown("### 📊 Live Interactive TradingView Chart")
 
-# 2. Main Live TradingView Chart
+# 3. Main Live TradingView Chart
 tv_widget = """
 <div class="tradingview-widget-container">
   <div id="tradingview_chart"></div>
@@ -78,4 +83,4 @@ if st.checkbox("🔄 Auto Refresh (Every 10s)", value=True):
     import time
     time.sleep(10)
     st.rerun()
-  
+    
