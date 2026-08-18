@@ -1,76 +1,88 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import requests
 
-# Page Configuration
 st.set_page_config(page_title="BTC Operator Trap & Pro Chart", layout="wide")
 
-st.title("🚀 Bitcoin Operator Trap & Pro Analysis")
+st.title("🚀 Bitcoin Operator Trap & Pro Chart")
 st.markdown("---")
 
-# Real-time Operator Trap & Signal Box using TradingView Widget & Custom UI
-st.subheader("🎯 Live Operator & Trader Trap Detector")
-
-# Embedded TradingView Real-time Data & Analysis Engine
-trap_analyzer_widget = """
-<div style="background-color: #1e222d; padding: 20px; border-radius: 10px; color: white; font-family: sans-serif;">
-    <h3 style="margin-top: 0; color: #00ffcc;">📊 Live Market Data & Operator Status</h3>
-    
-    <!-- TradingView Widget BEGIN -->
-    <div class="tradingview-widget-container">
-      <div class="tradingview-widget-container__widget"></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js" async>
-      {
-      "symbols": [
-        ["Binance:BTCUSDT|1D"]
-      ],
-      "chartOnly": false,
-      "width": "100%",
-      "height": "350",
-      "locale": "en",
-      "colorTheme": "dark",
-      "autosize": false,
-      "showVolume": true,
-      "showMA": false,
-      "hideDateRanges": false,
-      "hideMarketStatus": false,
-      "hideSymbolLogo": false,
-      "scalePosition": "right",
-      "scaleMode": "Normal",
-      "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
-      "noTimeScale": false,
-      "valuesTracking": "1",
-      "changeMode": "price-and-percent",
-      "chartType": "candlesticks",
-      "maLineColor": "#2962FF",
-      "maLineWidth": 1,
-      "maLength": 9,
-      "headerFontSize": "medium",
-      "backgroundColor": "rgba(19, 23, 34, 0)",
-      "gridLineColor": "rgba(42, 46, 57, 0.06)",
-      "dateFontColor": "rgba(178, 181, 189, 1)",
-      "timeZone": "Etc/UTC",
-      "dateFormat": "yyyy-MM-dd"
-    }
-      </script>
-    </div>
-    <!-- TradingView Widget END -->
-    
-    <div style="margin-top: 15px; padding: 15px; background-color: #2a2e39; border-left: 5px solid #ff007f; border-radius: 5px;">
-        <h4 style="margin: 0 0 10px 0; color: #ff007f;">🚨 Operator Trap & Action Strategy:</h4>
-        <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-            * <b>Resistance / High Trap (Bearish):</b> If price spikes near 24h High and rejects, big operators are trapping buyers. <b>Look for SELL / SHORT position.</b><br>
-            * <b>Support / Low Trap (Bullish):</b> If price dips below 24h Low and reverses quickly, operators are trapping sellers. <b>Look for BUY / LONG position.</b>
-        </p>
-    </div>
+# 1. Top Section: Only Live Price
+st.markdown("### 🔴 Live Bitcoin Price")
+price_widget = """
+<div class="tradingview-widget-container">
+  <div class="tradingview-widget-container__widget"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+  {
+  "symbol": "BINANCE:BTCUSDT",
+  "width": "100%",
+  "colorTheme": "dark",
+  "isTransparent": true,
+  "locale": "en"
+}
+  </script>
 </div>
 """
+components.html(price_widget, height=90)
 
-components.html(trap_analyzer_widget, height=580)
+st.markdown("---")
+
+# 2. Detailed Analysis: High, Low, Trap Price & Status (Short/Long)
+st.subheader("📊 Operator Trap & Market Status Analysis")
+
+@st.cache_data(ttl=5)
+def get_trap_details():
+    try:
+        url = "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT"
+        res = requests.get(url, timeout=3).json()
+        price = float(res['lastPrice'])
+        high = float(res['highPrice'])
+        low = float(res['lowPrice'])
+        
+        spread = high - low
+        pos = (price - low) / spread if spread > 0 else 0.5
+        
+        if pos >= 0.82:
+            status = "🚨 BEARISH TRAP (SHORT POSITION ZONE)"
+            trap_price = high
+            advice = "Operators are trapping buyers near resistance. Look to **SELL / SHORT**."
+            box_type = "error"
+        elif pos <= 0.18:
+            status = "🚀 BULLISH TRAP (LONG POSITION ZONE)"
+            trap_price = low
+            advice = "Operators are trapping sellers near support. Look to **BUY / LONG**."
+            box_type = "success"
+        else:
+            status = "⚖️ NEUTRAL ZONE (WAIT FOR EXTREMES)"
+            trap_price = (high + low) / 2
+            advice = "Price is in the middle range. Wait for price to touch 24h High or Low."
+            box_type = "warning"
+            
+        return price, high, low, trap_price, status, advice, box_type
+    except:
+        return 0.0, 0.0, 0.0, 0.0, "🔄 Loading Market Data...", "Please wait...", "warning"
+
+price, high, low, trap_price, status, advice, box_type = get_trap_details()
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("24h High", f"${high:,.2f}" if high > 0 else "Loading...")
+with col2:
+    st.metric("24h Low", f"${low:,.2f}" if low > 0 else "Loading...")
+with col3:
+    st.metric("Operator Trap Level", f"${trap_price:,.2f}" if trap_price > 0 else "Loading...")
+
+if box_type == "error":
+    st.error(f"### {status}\n* **Strategy:** {advice}")
+elif box_type == "success":
+    st.success(f"### {status}\n* **Strategy:** {advice}")
+else:
+    st.warning(f"### {status}\n* **Strategy:** {advice}")
 
 st.markdown("---")
 st.subheader("📉 Full Live Interactive TradingView Chart")
 
-# Main Interactive Chart
+# 3. Main Interactive Chart
 tv_widget = """
 <div class="tradingview-widget-container">
   <div id="tradingview_chart"></div>
@@ -95,3 +107,9 @@ tv_widget = """
 """
 
 components.html(tv_widget, height=600)
+
+if st.checkbox("🔄 Auto Refresh (Every 10s)", value=True):
+    import time
+    time.sleep(10)
+    st.rerun()
+    
