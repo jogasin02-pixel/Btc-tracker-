@@ -4,16 +4,15 @@ import requests
 import pandas as pd
 
 # Page Configuration
-st.set_page_config(page_title="BTC Pro Trap Dashboard", layout="wide")
+st.set_page_config(page_title="BTC Pro Live Operator Trap & Chart", layout="wide")
 
-st.title("🚀 Bitcoin Operator Trap & Pro Chart")
+st.title("🚀 BTC Live Operator Trap & Pro Chart")
 st.markdown("---")
 
-# 1. Fetch Trap Data (Real-time from Binance)
-@st.cache_data(ttl=10)
-def check_trap_status():
+# 1. Real-time Operator Trap & Position Calculator (Binance Live Data)
+@st.cache_data(ttl=5)
+def get_live_operator_status():
     try:
-        # Get last 24h data
         url = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=24"
         data = requests.get(url).json()
         df = pd.DataFrame(data, columns=['t', 'o', 'high', 'low', 'c', 'v', 'ct', 'q', 'n', 'tb', 'tq', 'i'])
@@ -22,45 +21,58 @@ def check_trap_status():
         daily_high = float(df['high'].max())
         daily_low = float(df['low'].min())
         
-        range_spread = daily_high - daily_low
-        pos_in_range = (current_price - daily_low) / range_spread
+        spread = daily_high - daily_low
+        pos = (current_price - daily_low) / spread if spread > 0 else 0.5
         
-        if pos_in_range > 0.85:
-            return "⚠️ BEARISH TRAP ZONE (Operators Selling - Look for SELL/SHORT)", "red", current_price
-        elif pos_in_range < 0.15:
-            return "⚠️ BULLISH TRAP ZONE (Operators Buying - Look for BUY/LONG)", "green", current_price
+        if pos > 0.80:
+            return "🚨 BEARISH OPERATOR TRAP (SELL / SHORT ZONE)", "Operators are trapping buyers near 24h High. Look for a downward reversal.", "red", current_price, daily_high, daily_low
+        elif pos < 0.20:
+            return "🚀 BULLISH OPERATOR TRAP (BUY / LONG ZONE)", "Operators are trapping sellers near 24h Low. Look for an upward bounce.", "green", current_price, daily_high, daily_low
         else:
-            return "⚖️ NEUTRAL ZONE (Wait for Breakout)", "gray", current_price
+            return "⚖️ NEUTRAL MARKET ZONE (WAIT FOR BREAKOUT)", "Price is in the middle of the daily range. Wait to reach High/Low extremes.", "yellow", current_price, daily_high, daily_low
     except:
-        return "🔄 Loading Status...", "gray", 0
+        return "🔄 Connecting to Live Feed...", "Fetching live data...", "gray", 0, 0, 0
 
-# Display Status
-status, color, price = check_trap_status()
+title, desc, color, price, high, low = get_live_operator_status()
+
+# Displaying Clear Action Boxes at the Top
 if color == "red":
-    st.error(f"### {status} | Current Price: ${price:,.2f}")
+    st.error(f"### {title}\n* **Live Price:** ${price:,.2f} | **24h High (Resistance):** ${high:,.2f}\n* **Action Guide:** {desc}")
 elif color == "green":
-    st.success(f"### {status} | Current Price: ${price:,.2f}")
+    st.success(f"### {title}\n* **Live Price:** ${price:,.2f} | **24h Low (Support):** ${low:,.2f}\n* **Action Guide:** {desc}")
 else:
-    st.warning(f"### {status} | Current Price: ${price:,.2f}")
+    st.warning(f"### {title}\n* **Live Price:** ${price:,.2f} | **Range:** ${low:,.2f} - ${high:,.2f}\n* **Action Guide:** {desc}")
 
-# 2. TradingView Widget
+st.markdown("---")
+st.subheader("📊 Live TradingView Pro Chart (Real-time Feed)")
+
+# 2. TradingView Live Interactive Chart (Same as TradingView website)
 tv_widget = """
 <div class="tradingview-widget-container">
   <div id="tradingview_chart"></div>
   <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
   <script type="text/javascript">
   new TradingView.widget({
-  "width": "100%", "height": 550, "symbol": "BINANCE:BTCUSDT",
-  "interval": "15", "timezone": "Etc/UTC", "theme": "dark",
-  "style": "1", "locale": "en", "toolbar_bg": "#f1f3f6",
-  "enable_publishing": false, "allow_symbol_change": true,
+  "width": "100%",
+  "height": 600,
+  "symbol": "BINANCE:BTCUSDT",
+  "interval": "15",
+  "timezone": "Etc/UTC",
+  "theme": "dark",
+  "style": "1",
+  "locale": "en",
+  "toolbar_bg": "#f1f3f6",
+  "enable_publishing": false,
+  "allow_symbol_change": true,
   "container_id": "tradingview_chart"
 });
   </script>
 </div>
 """
-components.html(tv_widget, height=550)
 
-if st.button("🔄 Refresh Analysis"):
+components.html(tv_widget, height=600)
+
+# Refresh Button for Live Status Update
+if st.button("🔄 Refresh Trap Status"):
     st.rerun()
-  
+    
