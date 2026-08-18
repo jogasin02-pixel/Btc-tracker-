@@ -39,7 +39,7 @@ col1, col2 = st.columns([1, 3])
 with col1:
     st.subheader("Control Panel")
     start_tracking = st.button("⚡ Start Fast Tracking")
-    auto_refresh = st.checkbox("🔄 Auto Refresh (Every 1s)")
+    auto_refresh = st.checkbox("🔄 Auto Refresh (Every 0s)")
 
 with col2:
     st.subheader("Live Market Status")
