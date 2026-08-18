@@ -1,31 +1,49 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import requests
 
 # Page Configuration
-st.set_page_config(page_title="BTC Live Operator Trap & Chart", layout="wide")
+st.set_page_config(page_title="BTC Operator Trap & Pro Chart", layout="wide")
 
 st.title("🚀 Bitcoin Operator Trap & Pro Chart")
 st.markdown("---")
 
-# 1. TradingView Live Ticker Tape (Exact Same Real-time Price as Chart - Zero Delay)
-st.markdown("### Live Market Price (Real-Time)")
-ticker_widget = """
-<!-- TradingView Widget BEGIN -->
-<div class="tradingview-widget-container">
-  <div class="tradingview-widget-container__widget"></div>
-  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
-  {
-  "symbol": "BINANCE:BTCUSDT",
-  "width": "100%",
-  "colorTheme": "dark",
-  "isTransparent": true,
-  "locale": "en"
-}
-  </script>
-</div>
-<!-- TradingView Widget END -->
-"""
-components.html(ticker_widget, height=90)
+# 1. Fetch Live Price & Calculate Trap Status
+@st.cache_data(ttl=5)
+def get_operator_trap():
+    try:
+        url = "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT"
+        res = requests.get(url, timeout=3).json()
+        price = float(res['lastPrice'])
+        high = float(res['highPrice'])
+        low = float(res['lowPrice'])
+        
+        spread = high - low
+        pos = (price - low) / spread if spread > 0 else 0.5
+        
+        if pos >= 0.82:
+            return price, high, low, "🚨 BEARISH TRAP (SHORT ZONE - Operators Trapping Buyers)", "error"
+        elif pos <= 0.18:
+            return price, high, low, "🚀 BULLISH TRAP (LONG ZONE - Operators Trapping Sellers)", "success"
+        else:
+            return price, high, low, "⚖️ NEUTRAL ZONE (WAIT FOR BREAKOUT)", "warning"
+    except:
+        # Fallback if API fails
+        return 0.0, 0.0, 0.0, "🔄 Loading Live Status...", "warning"
+
+price, high, low, status_text, box_type = get_operator_trap()
+
+# Displaying Live Price and Operator Status at the Top
+st.markdown(f"### Live Price")
+st.markdown(f"## **${price:,.2f}**")
+
+st.markdown(f"### Operator Status")
+if box_type == "error":
+    st.error(f"### {status_text}")
+elif box_type == "success":
+    st.success(f"### {status_text}")
+else:
+    st.warning(f"### {status_text}")
 
 st.markdown("---")
 st.markdown("### 📊 Live Interactive TradingView Chart")
@@ -54,3 +72,10 @@ tv_widget = """
 </div>
 """
 components.html(tv_widget, height=600)
+
+# Auto-refresh to keep data live
+if st.checkbox("🔄 Auto Refresh (Every 10s)", value=True):
+    import time
+    time.sleep(10)
+    st.rerun()
+  
