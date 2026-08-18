@@ -14,7 +14,6 @@ st.markdown("---")
 def get_btc_data_for_chart():
     try:
         btc = yf.Ticker("BTC-USD")
-        # Getting 7 days of data to see the broader trend
         df = btc.history(period="7d", interval="15m")
         if not df.empty:
             current_price = float(df['Close'].iloc[-1])
@@ -35,30 +34,29 @@ if price:
     # Trap Status
     if pos_in_range > 0.85:
         status = "⚠️ BEARISH TRAP ZONE (Operators selling)"
-        zone_color = "rgba(255, 0, 0, 0.2)" # Red zone
+        zone_color = "rgba(255, 0, 0, 0.2)"
         trap_zone_high = high
-        trap_zone_low = high - (range_spread * 0.15) # Top 15%
+        trap_zone_low = high - (range_spread * 0.15)
     elif pos_in_range < 0.15:
         status = "⚠️ BULLISH TRAP ZONE (Operators buying)"
-        zone_color = "rgba(0, 255, 0, 0.2)" # Green zone
-        trap_zone_high = low + (range_spread * 0.15) # Bottom 15%
+        zone_color = "rgba(0, 255, 0, 0.2)"
+        trap_zone_high = low + (range_spread * 0.15)
         trap_zone_low = low
     else:
         status = "⚖️ NEUTRAL ZONE"
-        zone_color = "rgba(200, 200, 200, 0.2)" # Grey zone
+        zone_color = "rgba(200, 200, 200, 0.2)"
         trap_zone_high = 0
         trap_zone_low = 0
 
-    # 3. Metric Display
+    # 3. Metric Display (Fixed Syntax)
     col1, col2, col3 = st.columns(3)
-    col1.metric(label="Live BTC Price", f"${price:,.2f}")
-    col2.metric(label="24h Range", f"H: ${high:,.2f} / L: ${low:,.2f}")
-    col3.metric(label="Operator Status", status)
+    col1.metric("Live BTC Price", f"${price:,.2f}")
+    col2.metric("24h Range", f"H: ${high:,.2f} / L: ${low:,.2f}")
+    col3.metric("Operator Status", status)
 
     # 4. CUSTOM PLOTLY CHART
     fig = go.Figure()
 
-    # Candlestick chart
     fig.add_trace(go.Candlestick(
         x=df.index,
         open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'],
@@ -67,19 +65,17 @@ if price:
         decreasing_line_color='magenta'
     ))
 
-    # Add Trap Zone as a rectangle shape
     if trap_zone_high > 0:
         fig.add_shape(
             type="rect",
             xref="paper", yref="y",
-            x0=0, x1=1, # full width
+            x0=0, x1=1,
             y0=trap_zone_low, y1=trap_zone_high,
             fillcolor=zone_color,
             opacity=0.5,
             layer="below",
             line_width=0,
         )
-        # Add annotation label for the zone
         fig.add_annotation(
             xref="paper", yref="y",
             x=0.98, y=(trap_zone_high + trap_zone_low) / 2,
@@ -91,7 +87,6 @@ if price:
             borderwidth=1
         )
 
-    # Add High and Low lines
     fig.add_trace(go.Scatter(
         x=[df.index[0], df.index[-1]],
         y=[high, high],
@@ -104,8 +99,6 @@ if price:
         mode="lines", name="24h Low",
         line=dict(color="green", width=1, dash="dash")
     ))
-
-    # Add current price line
     fig.add_trace(go.Scatter(
         x=[df.index[0], df.index[-1]],
         y=[price, price],
@@ -113,7 +106,6 @@ if price:
         line=dict(color="white", width=2)
     ))
 
-    # Chart Layout
     fig.update_layout(
         title="Advanced BTC Operator Trap Chart",
         yaxis_title="BTC Price (USD)",
@@ -124,15 +116,13 @@ if price:
         hovermode="x unified"
     )
 
-    # Display Plotly chart in Streamlit
     st.plotly_chart(fig, use_container_width=True)
 
 else:
     st.error("Error fetching data. Please wait a moment.")
 
-# Auto refresh checkbox
 if st.checkbox("🔄 Auto Refresh (Every 10s)", value=True):
     import time
     time.sleep(10)
     st.rerun()
-
+    
