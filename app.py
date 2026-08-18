@@ -39,7 +39,7 @@ col1, col2 = st.columns([1, 3])
 with col1:
     st.subheader("Control Panel")
     start_tracking = st.button("⚡ Start Fast Tracking")
-    auto_refresh = st.checkbox("🔄 Auto Refresh (Every 3s)")
+    auto_refresh = st.checkbox("🔄 Auto Refresh (Every 1s)")
 
 with col2:
     st.subheader("Live Market Status")
@@ -48,8 +48,7 @@ price, high, low, volume, price_change = get_fast_btc_data()
 
 if price:
     range_spread = high - low
-    position_in_range = (price - low) / range_spread if range_spread > 0 else 0.5
-
+    position_in_range = (price - low) / range_spread if range_spread > 0 else 0.2
     if position_in_range > 0.85:
         trap_status = "⚠️ BEARISH TRAP ZONE (Smart money may dump)"
     elif position_in_range < 0.15:
