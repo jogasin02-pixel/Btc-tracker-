@@ -22,9 +22,9 @@ def get_auto_signal():
         # Simple Momentum & Scalp Logic
         diff = current_price - prev_price
         
-        # Calculating a basic RSI-like momentum from last candles
-gains = [closes[i] - closes[i-1] for i in range(1, len(closes)) if closes[i] > closes[i-1]]
-losses = [closes[i-1] - closes[i] for i in range(1, len(closes)) if closes[i] < closes[i-1]]
+        # Calculating a basic momentum from last candles
+        gains = [closes[i] - closes[i-1] for i in range(1, len(closes)) if closes[i] > closes[i-1]]
+        losses = [closes[i-1] - closes[i] for i in range(1, len(closes)) if closes[i] < closes[i-1]]
         
         avg_gain = sum(gains) / len(gains) if gains else 0.001
         avg_loss = sum(losses) / len(losses) if losses else 0.001
