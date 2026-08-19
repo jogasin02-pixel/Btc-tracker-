@@ -2,28 +2,33 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # Page Configuration
-st.set_page_config(page_title="BTC Live Price, Meter & Chart", layout="wide")
+st.set_page_config(page_title="BTC Live Dashboard", layout="wide")
 
-st.title("⚡ Bitcoin Live Price, Signal Meter & Chart")
+st.title("⚡ Bitcoin Live Price & Scalping Dashboard")
 st.markdown("---")
 
-# 1. Live Price Ticker (Real-Time Price)
-st.markdown("### 🔴 Live Market Price")
-price_widget = """
+# 1. Ticker Tape Live Price Bar (100% Working)
+ticker_widget = """
 <div class="tradingview-widget-container">
   <div class="tradingview-widget-container__widget"></div>
-  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
   {
-  "symbol": "BINANCE:BTCUSDT",
-  "width": "100%",
+  "symbols": [
+    {
+      "proName": "BINANCE:BTCUSDT",
+      "title": "Bitcoin"
+    }
+  ],
+  "showSymbolLogo": true,
   "colorTheme": "dark",
   "isTransparent": true,
+  "displayMode": "adaptive",
   "locale": "en"
 }
   </script>
 </div>
 """
-components.html(price_widget, height=90)
+components.html(ticker_widget, height=75)
 
 st.markdown("---")
 
