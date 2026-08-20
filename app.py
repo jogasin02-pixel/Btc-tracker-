@@ -4,12 +4,12 @@ import streamlit.components.v1 as components
 # Page Configuration
 st.set_page_config(page_title="BTC Pro Scalper Hub", layout="wide")
 
-st.title("⚡ BTC Pro Scalper Hub (Multi-Timeframe & Indicators)")
+st.title("⚡ BTC Pro Scalper Hub (10-Min & All Indicators)")
 st.markdown("---")
 
-# 1. Live Advanced Multi-Timeframe Chart with All Indicators & Tools
-st.markdown("### 📊 Advanced Live Chart (1m, 3m, 5m, 15m & All Indicators)")
-st.markdown("*(ਇਸ ਚਾਰਟ ਵਿੱਚ ਤੁਸੀਂ ਕੋਈ ਵੀ ਇੰਡੀਕੇਟਰ ਲਗਾ ਸਕਦੇ ਹੋ ਅਤੇ 1m, 3m, 5m, 15m ਮਿੰਟ ਦੀਆਂ ਕੈਂਡਲਜ਼ ਨੂੰ ਖੁਦ ਰੀਡ ਕਰ ਸਕਦੇ ਹੋ)*")
+# 1. Advanced Live Chart pre-set to 10-Minute interval with All Indicators
+st.markdown("### 📊 Live Chart (Set to 10-Minute for Operator & Whale Moves)")
+st.markdown("*(ਇਸ ਚਾਰਟ ਵਿੱਚ ਉੱਪਰ ਟਾਈਮਫ੍ਰੇਮ ਨੂੰ **10m** ਸੈੱਟ ਕਰੋ ਅਤੇ ਸਾਰੇ ਇੰਡੀਕੇਟਰ ਦੇਖ ਕੇ ਸਟੀਕ ਟਰੇਡ ਲਗਾਓ)*")
 
 tv_widget = """
 <div class="tradingview-widget-container">
@@ -20,7 +20,7 @@ tv_widget = """
   "width": "100%",
   "height": 620,
   "symbol": "BINANCE:BTCUSDT",
-  "interval": "3",
+  "interval": "10",
   "timezone": "Etc/UTC",
   "theme": "dark",
   "style": "1",
